@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2 class="mb-4">Your Videos</h2>
+    
+    <div class="upload-section mb-5">
+        <form id="uploadForm" class="upload-form" enctype="multipart/form-data">
+            <div class="upload-drop-zone" id="dropZone">
+                <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                <h4>Drag & Drop your video here</h4>
+                <p>or</p>
+                <input type="file" id="fileInput" accept="video/*" class="d-none">
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                    Select Video
+                </button>
+            </div>
+            <div class="processing-options mt-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="upscaleOption">
+                    <label class="form-check-label" for="upscaleOption">
+                        Upscale Video Quality
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="compressOption">
+                    <label class="form-check-label" for="compressOption">
+                        Compress Video
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="subtitleOption">
+                    <label class="form-check-label" for="subtitleOption">
+                        Generate Subtitles
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">Process Video</button>
+        </form>
+    </div>
+
+    <div class="videos-grid">
+        {% for video in videos %}
+        <div class="video-card">
+            <div class="video-player-container">
+                <video class="video-js" controls preload="auto" width="640" height="360">
+                    <source src="{{ url_for('static', filename=video.processed_path) }}" type="video/mp4">
+                    {% if video.subtitle_path %}
+                    <track kind="subtitles" src="{{ url_for('static', filename=video.subtitle_path) }}" srclang="en" label="English">
+                    {% endif %}
+                </video>
+            </div>
+            <div class="video-info">
+                <h5>{{ video.filename }}</h5>
+                <p>Uploaded: {{ video.upload_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p>Status: <span class="badge bg-{{ 'success' if video.status == 'completed' else 'warning' }}">
+                    {{ video.status }}
+                </span></p>
+                <div class="video-actions">
+                    <a href="{{ url_for('download_video', video_id=video.id) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <button class="btn btn-danger btn-sm" onclick="deleteVideo({{ video.id }})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
